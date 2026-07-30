@@ -73,11 +73,6 @@ This dict is registered into `OS Connector Registry` verbatim — get it right a
 - **Settings fields** (`template_connector_settings.json`) — the template ships API URL + Token, and Company/Warehouse/Price List defaults for mapping into ERPNext. Add/remove fields for whatever your integration actually needs (webhook secrets, store domain, API version, etc.).
 - **`setup/install.py:setup_custom_fields()`** — replace the example `Item` custom fields (`template_external_id`, `sync_to_template`) with the external-ID / flag fields your connector needs on `Item` (or other DocTypes). This runs once, lazily, on the settings' 0→1 `is_enabled` transition (see `template_connector_settings.py:_on_first_enable()`) — **not** on every migrate, so installing the app stays cheap until an admin actually opts in. If your connector needs heavier one-time setup (default Supplier, Price Lists, Item Attributes — see the Cloudstore/Shopify connectors for examples), add it to `_on_first_enable()` too.
 - Optional, commented-out in `hooks.py`: `doc_events` (react to Item/Sales Order changes) and `doctype_list_js` (inject a client script into a stock ERPNext list view) — uncomment and wire up only if your connector needs them.
-
-### 5. Don't build against core's shared generic DocTypes — they're deprecated
-
-`alaiy_os` core ships `Item Supplier Attribute`, `Supplier Item Availability`, and `Channel Listing` (real `doctype/*.json` files under `alaiy_os/alaiy_os/doctype/`), originally meant as a canonical shape for supplier attributes, per-supplier stock availability, and channel-listing state so connectors wouldn't each reinvent it. In practice, neither of the two connectors it was built for ended up using it that way: Cloudstore drives ERPNext's native Stock Reconciliation directly for stock, and Shopify bolts its own fields onto `Item` for channel state. All three are marked deprecated in their own DocType `description` (`Item Supplier Attribute` is still populated by Cloudstore today, so it stays for backward compatibility; the other two have zero real usage). Model your own supplier-attribute or channel-listing state as its own `Item` custom field (step 4 above) or your own connector-specific DocType instead of building against this shape.
-
 ---
 
 ## How the pieces fit together at runtime
