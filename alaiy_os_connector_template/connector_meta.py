@@ -26,4 +26,28 @@ connector_meta = {
     "sync_items_label": "Push",
     "is_enabled": 0,
     "connection_status": "untested",
+    # One entry per function the connector performs. Core reads the connector's own
+    # sync log and the interval field on its settings doctype (a Select whose options
+    # are "Disabled", "5 min", "1 hour", ...). Replace the doctype and field names
+    # below with your own, and add one entry per sync type. Use "scheduled": False and
+    # drop "interval_setting" for on-demand or webhook-driven functions, and
+    # "expects_rows": False when a run can legitimately process nothing.
+    "health": [
+        {
+            "key": "pull",
+            "label": "Pull sync",
+            "direction": "pull",
+            "log_doctype": "Template Sync Log",
+            "log_filter": {"sync_type": "pull"},
+            "fields": {
+                "processed": "items_processed",
+                "changed": ["items_created", "items_updated"],
+                "failed": "items_failed",
+                "error": "error_message",
+            },
+            "interval_setting": "template_pull_sync_interval",
+            "scheduled": True,
+            "expects_rows": False,
+        },
+    ],
 }
